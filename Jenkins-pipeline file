@@ -1,0 +1,29 @@
+pipeline {
+  agent any
+
+  stages {
+
+    stage('Checkout from GitHub') {
+      steps {
+        git url: 'https://github.com/bhavi-max/apache-cicd-project.git',
+            branch: 'main'
+      }
+    }
+
+    stage('Copy file to EC2') {
+      steps {
+        sh '''
+          scp -i "C:/Users/Admin/Downloads/jenkins-ag.pem" -o StrictHostKeyChecking=no index.html ec2-user@35.183.40.42:/tmp/index.html
+        '''
+      }
+    }
+
+    stage('Deploy using Apache') {
+      steps {
+        sh '''
+          ssh -i "C:/Users/Admin/Downloads/jenkins-ag.pem" -o StrictHostKeyChecking=no ec2-user@35.183.40.42 "sudo mv /tmp/index.html /var/www/html/index.html && sudo systemctl restart httpd"
+        '''
+      }
+    }
+  }
+}
